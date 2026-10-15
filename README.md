@@ -1,14 +1,25 @@
 # devdesk — my keyboard-driven i3 setup
 
+[![lint](https://github.com/sharan-sudoaccess/LYG4/actions/workflows/lint.yml/badge.svg)](https://github.com/sharan-sudoaccess/LYG4/actions/workflows/lint.yml)
+
 A small, clean developer desktop built on **i3**. It works on both **Ubuntu** and **Arch Linux**.
 Every part of the desktop (terminal, launcher, bar, window borders, notifications, wallpaper)
-uses the same colors, and one command switches all of them between **3 themes**.
+uses the same colors. One command switches all of them between **3 themes**, or builds a new
+theme from **any wallpaper you give it**.
+
+![theme switching](screenshots/theme-switch.gif)
 
 | Gruvbox | Nord | Catppuccin |
 |---|---|---|
 | ![gruvbox](screenshots/gruvbox.png) | ![nord](screenshots/nord.png) | ![catppuccin](screenshots/catppuccin.png) |
 
-![rofi launcher](screenshots/rofi-launcher.png)
+| Theme made from a wallpaper | App launcher |
+|---|---|
+| ![wallpaper theme](screenshots/wallpaper-theme.png) | ![rofi](screenshots/rofi-launcher.png) |
+
+| Shortcut cheat sheet (`Super+/`) | Drop-down terminal (`Super+-`) |
+|---|---|
+| ![keys](screenshots/keys.png) | ![dropdown](screenshots/dropdown.png) |
 
 ## What's inside
 
@@ -22,7 +33,8 @@ uses the same colors, and one command switches all of them between **3 themes**.
 | Notifications | dunst | `config/dunst/dunstrc.base` |
 | Screenshots | maim + xclip | `scripts/dt-shot` |
 
-I kept it small on purpose: no icon fonts, no heavy widgets, just the tools you actually use.
+I kept it small on purpose: no icon fonts and no heavy widgets, only the tools you actually use.
+Everything extra is a short bash script in `scripts/`.
 
 ## Install (one command)
 
@@ -40,20 +52,26 @@ cd ~/devdesk
 
 Then log out, choose **i3** on the login screen and log back in.
 
-Already have the packages? Run `./install.sh --no-packages`.
+| Option | What it does |
+|---|---|
+| `--theme <name>` | starting theme (`gruvbox`, `nord`, `catppuccin`) |
+| `--no-packages` | only link configs, don't install anything |
+| `--uninstall` | remove the links and restore your old configs |
 
 > **Ubuntu note:** use Ubuntu 24.04 or newer. `gaps` only became part of i3 in 4.22, and
 > 22.04 ships 4.20. On 22.04, delete the three `gaps`/`smart_gaps` lines in `config/i3/config`.
 
 ## Keybindings
 
-`Super` is the mod key.
+`Super` is the mod key. Forgot one? Press **`Super + /`** and search for it.
 
 | Keys | Action |
 |---|---|
 | `Super + Enter` | terminal (kitty) |
+| `Super + -` | drop-down terminal (show/hide) |
 | `Super + d` | app launcher (rofi) |
 | `Super + Tab` | switch between open windows (rofi) |
+| `Super + /` | searchable shortcut cheat sheet |
 | `Super + 1..9` | go to workspace |
 | `Super + Shift + 1..9` | move window to workspace |
 | `Super + [` / `]` | previous / next workspace |
@@ -73,21 +91,22 @@ Already have the packages? Run `./install.sh --no-packages`.
 | `Super + i` | system info notification |
 | `Super + Shift + i` | live system monitor (floating) |
 | `Super + f` | focus mode on/off |
+| `Super + Escape` | power menu (lock, logout, suspend, reboot, shutdown) |
 | `Super + Shift + x` | lock screen |
 | `Super + Shift + c` / `r` | reload / restart i3 |
-| `Super + Shift + e` | exit i3 |
 
 Screenshots go to `~/Pictures/Screenshots/` and are also copied to the clipboard.
 
 ## Scripts
 
-All scripts are plain bash and live in `scripts/`.
+All scripts are plain bash, live in `scripts/` and pass `shellcheck`.
 
 ### `dt-theme`: switch theme everywhere
 
 ```bash
-dt-theme set nord      # gruvbox | nord | catppuccin
-dt-theme menu          # pick one with rofi (Super+t)
+dt-theme set nord              # gruvbox | nord | catppuccin
+dt-theme menu                  # pick one with rofi (Super+t)
+dt-theme wall ~/Pictures/x.jpg # make a theme from a wallpaper
 dt-theme list
 ```
 
@@ -106,23 +125,41 @@ themes/nord.theme ──► ~/.config/i3/theme.conf      (window borders)
 Then it reloads everything that's running: i3, polybar, kitty (with `SIGUSR1`, so open
 terminals change color too) and dunst. You don't need to log out.
 
+**Wallpaper themes:** `dt-theme wall <image>` uses ImageMagick to pull the 8 main colors out of
+the picture. It takes the darkest one for the background (darkened until text is readable), the
+lightest one for text, and the most colorful one for the accent. Then it saves the result as a
+normal theme and applies it, so it also shows up in the `Super+t` picker. Try it with
+`examples/sunset-wall.jpg`.
+
 **Adding your own theme:** copy `themes/nord.theme`, change the colors, and optionally drop a
-wallpaper with the same name into `themes/wallpapers/`. It will show up in the picker.
+wallpaper with the same name into `themes/wallpapers/`.
 
 ### `dt-sysinfo`: CPU, RAM, battery
 
 ```bash
 dt-sysinfo            # CPU 12%  RAM 41%  BAT 87%+
-dt-sysinfo --watch    # live view with bars, refreshes every 2s (dt-sysinfo --watch 1 for 1s)
+dt-sysinfo --bar      # same, colored for polybar
+dt-sysinfo --watch    # live view with bars, refreshes every 2s (--watch 1 for 1s)
 dt-sysinfo --notify   # show it as a notification
 ```
 
-- **CPU** is read from `/proc/stat` (two samples, 0.4s apart)
+- **CPU** is read from `/proc/stat`
 - **RAM** comes from `/proc/meminfo` (`MemTotal - MemAvailable`)
 - **Battery** comes from `/sys/class/power_supply/BAT*` (`+` = charging, `=` = full)
 - **No battery (desktop)?** It shows CPU temperature instead, and disk usage if there's no sensor.
 
-The bar runs it every 3 seconds. Click it to get a notification.
+In the bar, values turn **yellow** at 60% and **red** at 85% (and battery goes red at 15%),
+using the colors of the current theme. Click the bar text to get a notification.
+
+**Performance:** measuring CPU needs two readings, so most scripts `sleep` between them.
+`dt-sysinfo` saves the last reading in `$XDG_RUNTIME_DIR` instead and compares with the
+previous run. That way the bar never waits: each refresh takes about **14 ms instead of
+400 ms**.
+
+### `dt-keys`: shortcut cheat sheet
+
+`Super + /` opens every i3 shortcut in a searchable rofi list. It reads your **live i3 config**,
+so it's never out of date. Pick a line and press Enter to run that action.
 
 ### `dt-shot`: screenshots
 
@@ -135,14 +172,22 @@ A "do not disturb" switch for deep work. It hides the bar, removes gaps and paus
 notifications. Press it again to turn everything back on, and it tells you how many minutes
 you stayed focused.
 
+### `dt-power`: power menu
+
+A small rofi menu for lock, logout, suspend, reboot and shutdown, with a confirmation step for
+the risky ones. The lock screen uses the current theme's background color.
+
 ## Extras (bonus points)
 
-- **One-command install** for both Arch and Ubuntu, and it backs up your old configs
+- **Wallpaper-synced theming:** `dt-theme wall` builds a full theme from any image
+- **One-command install** for Arch and Ubuntu, with backup and `--uninstall`
 - **Automatic workspace assignment:** browsers open on `2:web`, editors/IDEs on `3:code`,
-  chat apps on `4:chat`, media on `5:media`. Dialogs and settings windows float.
-- **Theme-matched wallpapers:** every theme comes with its own wallpaper and switches it too
+  chat apps on `4:chat` and media on `5:media`. Dialogs and settings windows float.
+- **Faster bar refreshes:** `dt-sysinfo` never sleeps (about 14 ms per refresh), and polybar
+  restarts are locked so two theme switches can't fight each other
 - **Live reload:** switching themes recolors terminals that are already open
-- **Focus mode** (my own small productivity feature)
+- **My own productivity features:** focus mode, the shortcut cheat sheet and the drop-down terminal
+- **CI:** every push runs `shellcheck` on all scripts and validates the i3 config
 
 ## Repo layout
 
@@ -157,23 +202,14 @@ you stayed focused.
 │   ├── picom/picom.conf
 │   └── dunst/dunstrc.base
 ├── scripts/
-│   ├── dt-theme
-│   ├── dt-sysinfo
-│   ├── dt-shot
-│   └── dt-focus
+│   ├── dt-theme     dt-sysinfo   dt-shot
+│   └── dt-keys      dt-focus     dt-power
 ├── themes/
 │   ├── gruvbox.theme  nord.theme  catppuccin.theme
 │   └── wallpapers/
-└── screenshots/
+├── examples/sunset-wall.jpg
+├── screenshots/
+└── .github/workflows/lint.yml
 ```
 
 Generated color files are in `.gitignore`, so the repo only contains the source configs.
-
-## Uninstall
-
-Remove the symlinks and bring back your backups:
-
-```bash
-rm ~/.config/{i3,polybar,rofi,kitty,picom,dunst} ~/.local/bin/dt-*
-# then rename the *.bak.<time> folders back if you had old configs
-```

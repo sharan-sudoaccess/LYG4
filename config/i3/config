@@ -22,6 +22,7 @@ exec --no-startup-id picom -b
 exec --no-startup-id dunst
 exec --no-startup-id $bin/dt-theme wallpaper
 exec_always --no-startup-id ~/.config/polybar/launch.sh
+exec --no-startup-id $term --name dropdown
 
 # --- workspaces (named, apps auto-assigned) ---------------------------------
 set $ws1 "1:term"
@@ -43,6 +44,9 @@ for_window [class="(?i)spotify"] move to workspace $ws5
 for_window [class="(?i)pavucontrol|blueman|nm-connection-editor"] floating enable
 for_window [window_role="pop-up|dialog"] floating enable
 
+# drop-down terminal that lives in the scratchpad (Super+-, re-opens if closed)
+for_window [instance="dropdown"] floating enable, resize set 1100 560, move position center, move scratchpad
+
 # --- launchers --------------------------------------------------------------
 bindsym $mod+Return       exec $term
 bindsym $mod+d            exec --no-startup-id rofi -show drun
@@ -51,6 +55,9 @@ bindsym $mod+t            exec --no-startup-id $bin/dt-theme menu
 bindsym $mod+i            exec --no-startup-id $bin/dt-sysinfo --notify
 bindsym $mod+Shift+i      exec $term --class floating-sysinfo -e $bin/dt-sysinfo --watch
 bindsym $mod+f            exec --no-startup-id $bin/dt-focus
+bindsym $mod+slash        exec --no-startup-id $bin/dt-keys
+bindsym $mod+Escape       exec --no-startup-id $bin/dt-power
+bindsym $mod+minus        exec --no-startup-id "i3-msg -q '[instance=dropdown] scratchpad show' || $term --name dropdown"
 for_window [class="floating-sysinfo"] floating enable, resize set 520 220, move position center
 
 # --- screenshots (saved to ~/Pictures/Screenshots + copied to clipboard) ----
@@ -135,5 +142,5 @@ bindsym $mod+r mode "resize"
 # --- session ----------------------------------------------------------------
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
-bindsym $mod+Shift+x exec --no-startup-id i3lock -c 1e1e2e
-bindsym $mod+Shift+e exec --no-startup-id i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'
+bindsym $mod+Shift+x exec --no-startup-id $bin/dt-power lock
+bindsym $mod+Shift+e exec --no-startup-id $bin/dt-power
