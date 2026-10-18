@@ -124,13 +124,20 @@ EOT
     } > "$CFG/dunst/dunstrc"
 }
 
+# WALL_OVERRIDE: a wallpaper picked with "keep colors" in dt-wall (cleared by the
+# next theme switch). WALL_CURRENT: whatever is on screen now (dt-wall's banner).
+WALL_OVERRIDE="$CFG/devdesk/wallpaper-override"
+WALL_CURRENT="$CFG/devdesk/current-wallpaper"
+
 wallpaper() {
-    local t img
+    local t img override=""
     t="$(current)"
     load "$t"
-    for img in "$wallpaper" "$THEMES/wallpapers/$t".{png,jpg,jpeg}; do
+    [[ -r $WALL_OVERRIDE ]] && override=$(<"$WALL_OVERRIDE")
+    for img in "$override" "$wallpaper" "$THEMES/wallpapers/$t".{png,jpg,jpeg}; do
         if [[ -f $img ]] && command -v feh >/dev/null; then
             feh --no-fehbg --bg-fill "$img"
+            echo "$img" > "$WALL_CURRENT"
             return
         fi
     done
@@ -152,6 +159,7 @@ set_theme() {
     load "$1"
     mkdir -p "$(dirname "$STATE")"
     write_i3; write_kitty; write_polybar; write_rofi; write_dunst
+    rm -f "$WALL_OVERRIDE"                              # a theme brings its own wallpaper
     cp "$(theme_file "$1")" "$CFG/devdesk/colors.sh"   # for the other dt-* scripts
     echo "$1" > "$STATE"
     reload_all

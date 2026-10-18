@@ -59,6 +59,7 @@ bindsym $mod+Return       exec $term
 bindsym $mod+d            exec --no-startup-id $rofi -show drun
 bindsym $mod+Tab          exec --no-startup-id $rofi -show window
 bindsym $mod+t            exec --no-startup-id $bin/dt-theme menu
+bindsym $mod+w            exec --no-startup-id $bin/dt-wall
 bindsym $mod+i            exec --no-startup-id $bin/dt-sysinfo --notify
 bindsym $mod+Shift+i      exec $term --class floating-sysinfo -e $bin/dt-sysinfo --watch
 bindsym $mod+f            exec --no-startup-id $bin/dt-focus
@@ -113,7 +114,7 @@ bindsym $mod+b split h
 bindsym $mod+v split v
 bindsym $mod+Shift+f fullscreen toggle
 bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
+bindsym $mod+Shift+w layout tabbed
 bindsym $mod+e layout toggle split
 bindsym $mod+Shift+space floating toggle
 bindsym $mod+space focus mode_toggle
