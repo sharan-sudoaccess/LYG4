@@ -84,6 +84,9 @@ fg = $fg
 muted = $muted
 accent = $accent
 urgent = $urgent
+green = $color2
+yellow = $color3
+blue = $color4
 EOT
 }
 

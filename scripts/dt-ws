@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# dt-ws — go to (or carry the window to) the next / previous workspace number.
+# i3's own "workspace next" only cycles through workspaces that already exist,
+# so with one workspace open a swipe would do nothing. This always steps
+# 1 -> 2 -> 3 ... (stopping at 1 and 9) and uses the names from the i3 config.
+#
+#   dt-ws next | prev | move-next | move-prev
+
+CONF="${XDG_CONFIG_HOME:-$HOME/.config}/i3/config"
+
+# number of the focused workspace (named-only workspaces count as 1)
+cur=$(i3-msg -t get_workspaces | grep -o '"num":-\{0,1\}[0-9]*,"name":"[^"]*","visible":[a-z]*,"focused":true' \
+      | grep -o '"num":-\{0,1\}[0-9]*' | cut -d: -f2)
+(( ${cur:-1} >= 1 )) || cur=1
+
+case ${1:-} in
+    next|move-next) target=$(( cur + 1 )) ;;
+    prev|move-prev) target=$(( cur - 1 )) ;;
+    *) sed -n '7p' "$0" | sed 's/^# *//'; exit 1 ;;
+esac
+(( target < 1 )) && target=1
+(( target > 9 )) && target=9
+
+# "set $ws2 "2:web"" in the i3 config -> 2:web
+# shellcheck disable=SC2016  # "$ws" is literal text in the i3 config
+name=$(grep -m1 "^set \$ws$target " "$CONF" | sed 's/^set \$ws[0-9]* *//; s/"//g')
+name=${name:-$target}
+
+case $1 in
+    move-*) i3-msg -q "move container to workspace \"$name\", workspace \"$name\"" ;;
+    *)      i3-msg -q "workspace \"$name\"" ;;
+esac

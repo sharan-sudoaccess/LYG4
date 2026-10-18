@@ -34,7 +34,8 @@ install_packages() {
             sudo pacman -S --needed --noconfirm \
                 i3-wm i3lock polybar rofi kitty picom dunst feh maim xclip \
                 xdotool libnotify libpulse imagemagick xorg-xsetroot \
-                network-manager-applet blueman pavucontrol brightnessctl xdg-user-dirs ttf-jetbrains-mono
+                network-manager-applet blueman pavucontrol brightnessctl xorg-xinput \
+                libinput python git curl xdg-user-dirs ttf-jetbrains-mono ttf-jetbrains-mono-nerd
             ;;
         *" ubuntu "*|*" debian "*)
             say "Ubuntu/Debian detected — installing with apt"
@@ -42,7 +43,8 @@ install_packages() {
             sudo apt-get install -y \
                 i3-wm i3lock polybar rofi kitty picom dunst feh maim xclip \
                 xdotool libnotify-bin pulseaudio-utils imagemagick \
-                network-manager-gnome blueman pavucontrol brightnessctl x11-xserver-utils xdg-user-dirs fonts-jetbrains-mono
+                network-manager-gnome blueman pavucontrol brightnessctl xinput \
+                libinput-tools python3 git curl x11-xserver-utils xdg-user-dirs fonts-jetbrains-mono
             ;;
         *)
             echo "Unsupported distro ($ID). Install the packages from README manually, then run with --no-packages."
@@ -60,9 +62,43 @@ link() {  # link <src> <dest>, backing up anything already there
     echo "   $dest -> $src"
 }
 
+# Icons in the bar need a Nerd Font. Arch gets it from pacman; elsewhere we
+# download JetBrainsMono Nerd Font into ~/.local/share/fonts (user only).
+install_font() {
+    fc-list 2>/dev/null | grep -qi "Nerd Font" && return
+    say "Installing JetBrainsMono Nerd Font (icons for the bar)"
+    local dir="$HOME/.local/share/fonts/JetBrainsMonoNerd"
+    mkdir -p "$dir"
+    if curl -fsSL "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/JetBrainsMono.tar.xz" \
+        | tar -xJ -C "$dir"; then
+        fc-cache -f "$dir" >/dev/null
+    else
+        echo "   could not download the font — bar icons will show as boxes"
+    fi
+}
+
+# Touchpad gestures (libinput-gestures, pinned release). It reads the touchpad,
+# so the user has to be in the "input" group — that needs a logout/login once.
+GESTURES_VERSION=2.81
+install_gestures() {
+    if ! command -v libinput-gestures >/dev/null; then
+        say "Installing libinput-gestures $GESTURES_VERSION (touchpad gestures)"
+        local src="${XDG_CACHE_HOME:-$HOME/.cache}/devdesk/libinput-gestures"
+        rm -rf "$src"
+        git -c advice.detachedHead=false clone -q --depth 1 --branch "$GESTURES_VERSION" \
+            https://github.com/bulletmark/libinput-gestures "$src"
+        (cd "$src" && sudo ./libinput-gestures-setup install >/dev/null)   # must run from its folder
+    fi
+    if ! id -nG "$USER" | grep -qw input; then
+        sudo gpasswd -a "$USER" input >/dev/null
+        NEED_RELOGIN=1
+    fi
+}
+
 uninstall() {
     local link dest backup
-    for link in "$CFG"/{i3,polybar,picom,dunst} "$CFG"/devdesk/{kitty,rofi} "$BIN"/dt-*; do
+    for link in "$CFG"/{i3,polybar,picom,dunst} "$CFG"/devdesk/{kitty,rofi} \
+                "$CFG"/libinput-gestures.conf "$BIN"/dt-*; do
         [[ -L $link && "$(readlink -f "$link")" == "$REPO"/* ]] || continue
         rm "$link"; echo "   removed $link"
     done
@@ -74,7 +110,9 @@ uninstall() {
 }
 
 if [[ $UNINSTALL == 1 ]]; then uninstall; exit 0; fi
-if [[ $PACKAGES == 1 ]]; then install_packages; fi
+NEED_RELOGIN=0
+if [[ $PACKAGES == 1 ]]; then install_packages; install_gestures; fi
+install_font
 
 say "Linking configs"
 mkdir -p "$CFG" "$BIN"
@@ -87,6 +125,7 @@ mkdir -p "$CFG/devdesk"
 for dir in kitty rofi; do
     link "$REPO/config/$dir" "$CFG/devdesk/$dir"
 done
+link "$REPO/config/gestures/libinput-gestures.conf" "$CFG/libinput-gestures.conf"
 
 say "Linking scripts into $BIN"
 for s in "$REPO"/scripts/dt-*; do
@@ -100,3 +139,6 @@ say "Applying theme: $THEME"
 
 say "Done! Log out, pick 'i3' on the login screen and log back in."
 say "Super+Enter terminal · Super+d apps · Super+t themes · Super+/ all shortcuts"
+if [[ $NEED_RELOGIN == 1 ]]; then
+    say "Touchpad gestures start working after you log out and back in once."
+fi
