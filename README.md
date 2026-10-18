@@ -204,7 +204,8 @@ wallpaper with the same name into `themes/wallpapers/`.
 
 ![wallpaper picker](screenshots/wallpaper-picker.png)
 
-`Super + w` shows every image in `~/Pictures/Wallpapers` as a grid of thumbnails, with the
+`Super + w` shows every image in `~/Pictures/Wallpapers` (or an existing
+`~/Pictures/wallpapers`, like the one JaKooLit's setup creates) as a grid of thumbnails, with the
 current wallpaper as a banner on top. Type to search.
 
 - **Enter**: set the wallpaper **and** recolor the whole desktop to match it (`dt-theme wall`)
