@@ -135,7 +135,9 @@ done
 mkdir -p "$HOME/Pictures/Screenshots"
 
 # wallpaper picker folder (Super+w); start it with the bundled wallpapers
-WALLS="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")/Wallpapers"
+PICS="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")"
+WALLS="$PICS/Wallpapers"
+[[ ! -d $WALLS && -d $PICS/wallpapers ]] && WALLS="$PICS/wallpapers"    # e.g. JaKooLit's folder
 if [[ ! -d $WALLS ]] || [[ -z $(ls -A "$WALLS") ]]; then
     mkdir -p "$WALLS"
     cp -n "$REPO"/themes/wallpapers/* "$REPO"/examples/*.jpg "$WALLS"/

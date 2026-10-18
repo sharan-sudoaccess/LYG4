@@ -12,7 +12,10 @@
 
 CFG="${XDG_CONFIG_HOME:-$HOME/.config}"
 BIN="$(dirname "$(readlink -f "$0")")"
-DIR="${DT_WALLPAPERS:-$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")/Wallpapers}"
+PICS="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")"
+# use an existing ~/Pictures/wallpapers (e.g. from JaKooLit's setup) if there is one
+DIR="${DT_WALLPAPERS:-$PICS/Wallpapers}"
+[[ -z ${DT_WALLPAPERS:-} && ! -d $DIR && -d $PICS/wallpapers ]] && DIR="$PICS/wallpapers"
 THUMBS="${XDG_CACHE_HOME:-$HOME/.cache}/devdesk/thumbs"
 IM="$(command -v magick || command -v convert)"
 
