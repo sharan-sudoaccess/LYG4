@@ -3,7 +3,8 @@
 # It reads the live i3 config, so it never goes out of date.
 # Pick a line and press Enter to run that action.
 
-CONF="${XDG_CONFIG_HOME:-$HOME/.config}/i3/config"
+CFG="${XDG_CONFIG_HOME:-$HOME/.config}"
+CONF="$CFG/i3/config"
 declare -A vars
 
 pretty_key() {
@@ -18,6 +19,8 @@ pretty_cmd() {
     c=${c#exec }; c=${c#--no-startup-id }
     c=${c//\~\/.local\/bin\//}
     c=${c/workspace number /workspace }
+    c=${c// --config \~\/.config\/devdesk\/kitty\/kitty.conf/}
+    c=${c// -config \~\/.config\/devdesk\/rofi\/config.rasi/}
     echo "$c"
 }
 
@@ -48,5 +51,5 @@ if [[ ${1:-} == --print || -z ${DISPLAY:-} ]]; then
     echo "$menu"; exit 0
 fi
 
-idx=$(rofi -dmenu -i -p keys -format i -theme-str 'window {width: 760px;}' <<< "$menu") || exit 0
+idx=$(rofi -config "$CFG/devdesk/rofi/config.rasi" -dmenu -i -p keys -format i -theme-str 'window {width: 760px;}' <<< "$menu") || exit 0
 [[ -n $idx ]] && i3-msg -q "$(expand "${cmds[$idx]}")"
