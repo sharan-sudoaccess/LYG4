@@ -27,8 +27,8 @@ theme from **any wallpaper you give it**.
 |---|---|---|
 | Window manager | i3 | `config/i3/config` |
 | Status bar | polybar | `config/polybar/` |
-| Launcher | rofi | `config/rofi/config.rasi` |
-| Terminal | kitty | `config/kitty/kitty.conf` |
+| Launcher | rofi | `config/rofi/config.rasi` (linked to `~/.config/devdesk/rofi`) |
+| Terminal | kitty | `config/kitty/kitty.conf` (linked to `~/.config/devdesk/kitty`) |
 | Compositor | picom (shadows, fades, round corners) | `config/picom/picom.conf` |
 | Notifications | dunst | `config/dunst/dunstrc.base` |
 | Screenshots | maim + xclip | `scripts/dt-shot` |
@@ -47,10 +47,23 @@ cd ~/devdesk
 `install.sh` will:
 1. find out if you're on Arch (`pacman`) or Ubuntu/Debian (`apt`) and install the packages
 2. back up any existing configs (`~/.config/i3` → `~/.config/i3.bak.<time>`)
-3. symlink the configs into `~/.config` and the scripts into `~/.local/bin`
+3. symlink the configs into `~/.config` (kitty/rofi into `~/.config/devdesk/`) and the scripts into `~/.local/bin`
 4. apply the starting theme
 
 Then log out, choose **i3** on the login screen and log back in.
+
+### Safe next to your current desktop
+
+devdesk installs **alongside** whatever you already use (GNOME, KDE, or a Hyprland setup such
+as JaKooLit's). You just pick the session on the login screen.
+
+- kitty and rofi are shared with many other setups, so devdesk gives them **private configs**
+  in `~/.config/devdesk/` and starts them with `--config`. Your `~/.config/kitty` and
+  `~/.config/rofi` are never touched.
+- `dt-theme` only reloads apps when it's running inside i3, so it never changes a running
+  Hyprland or GNOME session.
+- Any other config folder that already exists (`i3`, `polybar`, `picom`, `dunst`) is **moved**
+  to a `.bak.<time>` folder, never deleted, and `--uninstall` puts it back.
 
 | Option | What it does |
 |---|---|

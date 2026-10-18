@@ -3,7 +3,9 @@
 #   dt-power          show menu
 #   dt-power lock     lock the screen in the current theme's colors
 
-COLORS="${XDG_CONFIG_HOME:-$HOME/.config}/devdesk/colors.sh"
+CFG="${XDG_CONFIG_HOME:-$HOME/.config}"
+COLORS="$CFG/devdesk/colors.sh"
+ROFI=(rofi -config "$CFG/devdesk/rofi/config.rasi")
 # shellcheck source=/dev/null
 [[ -r $COLORS ]] && source "$COLORS"
 
@@ -16,10 +18,10 @@ lock() {
 [[ ${1:-} == lock ]] && { lock; exit 0; }
 
 choice=$(printf '%s\n' lock logout suspend reboot shutdown \
-    | rofi -dmenu -i -p power -theme-str 'window {width: 300px;} listview {lines: 5;}') || exit 0
+    | "${ROFI[@]}" -dmenu -i -p power -theme-str 'window {width: 300px;} listview {lines: 5;}') || exit 0
 
 confirm() {
-    [[ $(printf 'no\nyes\n' | rofi -dmenu -p "$1?" -theme-str 'window {width: 300px;} listview {lines: 2;}') == yes ]]
+    [[ $(printf 'no\nyes\n' | "${ROFI[@]}" -dmenu -p "$1?" -theme-str 'window {width: 300px;} listview {lines: 2;}') == yes ]]
 }
 
 case $choice in

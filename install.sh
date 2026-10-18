@@ -60,11 +60,11 @@ link() {  # link <src> <dest>, backing up anything already there
 
 uninstall() {
     local link dest backup
-    for link in "$CFG"/{i3,polybar,rofi,kitty,picom,dunst} "$BIN"/dt-*; do
+    for link in "$CFG"/{i3,polybar,picom,dunst} "$CFG"/devdesk/{kitty,rofi} "$BIN"/dt-*; do
         [[ -L $link && "$(readlink -f "$link")" == "$REPO"/* ]] || continue
         rm "$link"; echo "   removed $link"
     done
-    for dest in "$CFG"/{i3,polybar,rofi,kitty,picom,dunst}; do
+    for dest in "$CFG"/{i3,polybar,picom,dunst}; do
         backup=$(find "$(dirname "$dest")" -maxdepth 1 -name "$(basename "$dest").bak.*" | sort | tail -1)
         if [[ -n $backup && ! -e $dest ]]; then mv "$backup" "$dest"; echo "   restored $dest"; fi
     done
@@ -76,8 +76,14 @@ if [[ $PACKAGES == 1 ]]; then install_packages; fi
 
 say "Linking configs"
 mkdir -p "$CFG" "$BIN"
-for dir in i3 polybar rofi kitty picom dunst; do
+for dir in i3 polybar picom dunst; do
     link "$REPO/config/$dir" "$CFG/$dir"
+done
+# kitty and rofi get private config dirs, so ~/.config/kitty and ~/.config/rofi
+# (used by other desktops like Hyprland or GNOME) are never touched
+mkdir -p "$CFG/devdesk"
+for dir in kitty rofi; do
+    link "$REPO/config/$dir" "$CFG/devdesk/$dir"
 done
 
 say "Linking scripts into $BIN"

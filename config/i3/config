@@ -2,7 +2,10 @@
 # Super = $mod. Colors come from theme.conf (written by dt-theme).
 
 set $mod Mod4
-set $term kitty
+# kitty and rofi use devdesk's own configs, so other desktops on this
+# machine (e.g. a Hyprland setup) keep their ~/.config/kitty and ~/.config/rofi
+set $term kitty --config ~/.config/devdesk/kitty/kitty.conf
+set $rofi rofi -config ~/.config/devdesk/rofi/config.rasi
 set $bin ~/.local/bin
 
 font pango:JetBrains Mono 10
@@ -49,8 +52,8 @@ for_window [instance="dropdown"] floating enable, resize set 1100 560, move posi
 
 # --- launchers --------------------------------------------------------------
 bindsym $mod+Return       exec $term
-bindsym $mod+d            exec --no-startup-id rofi -show drun
-bindsym $mod+Tab          exec --no-startup-id rofi -show window
+bindsym $mod+d            exec --no-startup-id $rofi -show drun
+bindsym $mod+Tab          exec --no-startup-id $rofi -show window
 bindsym $mod+t            exec --no-startup-id $bin/dt-theme menu
 bindsym $mod+i            exec --no-startup-id $bin/dt-sysinfo --notify
 bindsym $mod+Shift+i      exec $term --class floating-sysinfo -e $bin/dt-sysinfo --watch
