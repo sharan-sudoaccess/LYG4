@@ -26,14 +26,15 @@ theme from **any wallpaper you give it**.
 | Part | Tool | Config |
 |---|---|---|
 | Window manager | i3 | `config/i3/config` |
-| Status bar | polybar | `config/polybar/` |
+| Status bar | polybar (waybar-style pills with icons) | `config/polybar/` |
 | Launcher | rofi | `config/rofi/config.rasi` (linked to `~/.config/devdesk/rofi`) |
 | Terminal | kitty | `config/kitty/kitty.conf` (linked to `~/.config/devdesk/kitty`) |
 | Compositor | picom (shadows, fades, round corners) | `config/picom/picom.conf` |
 | Notifications | dunst | `config/dunst/dunstrc.base` |
 | Screenshots | maim + xclip | `scripts/dt-shot` |
+| Touchpad gestures | libinput-gestures | `config/gestures/libinput-gestures.conf` |
+| Wi-Fi / Bluetooth / sound | nmtui, blueman, pavucontrol | opened from the bar |
 
-I kept it small on purpose: no icon fonts and no heavy widgets, only the tools you actually use.
 Everything extra is a short bash script in `scripts/`.
 
 ## Install (one command)
@@ -48,9 +49,11 @@ cd ~/devdesk
 1. find out if you're on Arch (`pacman`) or Ubuntu/Debian (`apt`) and install the packages
 2. back up any existing configs (`~/.config/i3` → `~/.config/i3.bak.<time>`)
 3. symlink the configs into `~/.config` (kitty/rofi into `~/.config/devdesk/`) and the scripts into `~/.local/bin`
-4. apply the starting theme
+4. install the JetBrainsMono Nerd Font (bar icons) and touchpad gestures
+5. apply the starting theme
 
-Then log out, choose **i3** on the login screen and log back in.
+Then log out, choose **i3** on the login screen and log back in. (The first install adds you to
+the `input` group for gestures, which only takes effect after that logout.)
 
 ### Safe next to your current desktop
 
@@ -87,7 +90,8 @@ as JaKooLit's). You just pick the session on the login screen.
 | `Super + /` | searchable shortcut cheat sheet |
 | `Super + 1..9` | go to workspace |
 | `Super + Shift + 1..9` | move window to workspace |
-| `Super + [` / `]` | previous / next workspace |
+| `Super + [` / `]` | previous / next workspace (creates it if needed) |
+| `Super + Shift + [` / `]` | carry the window to the previous / next workspace |
 | ``Super + ` `` | jump back to the last workspace |
 | `Super + h j k l` (or arrows) | focus window |
 | `Super + Shift + h j k l` | move window |
@@ -106,9 +110,57 @@ as JaKooLit's). You just pick the session on the login screen.
 | `Super + f` | focus mode on/off |
 | `Super + Escape` | power menu (lock, logout, suspend, reboot, shutdown) |
 | `Super + Shift + x` | lock screen |
+| `Super + n` | Wi-Fi menu |
+| `Super + Shift + n` | Bluetooth manager |
+| `Super + Shift + v` | sound settings |
+| volume / brightness keys | volume up/down/mute, screen brightness |
 | `Super + Shift + c` / `r` | reload / restart i3 |
 
 Screenshots go to `~/Pictures/Screenshots/` and are also copied to the clipboard.
+
+## Top bar
+
+![bar in all three themes](screenshots/bar.png)
+
+A waybar-style polybar: each part is a rounded "pill" in the theme's colors, and every pill
+can be clicked.
+
+| Pill | Shows | Mouse |
+|---|---|---|
+| apps icon | | click: app launcher |
+| workspaces | `1:term 2:web ...` | click: go there · scroll: switch |
+| window title | focused window | |
+| date / clock | `Sun 18 Oct 18:47` | click: full date |
+| tray | icons of apps like Discord | |
+| Wi-Fi | signal + network name | click: Wi-Fi menu |
+| Bluetooth | on/off or connected device | click: on/off · right-click: manager |
+| volume | icon + % | scroll: volume · click: mute · right-click: mixer |
+| brightness | % (laptops only) | scroll: brightness |
+| system | `dt-sysinfo`: CPU, RAM, battery | click: popup |
+| power | | click: power menu |
+
+Pills hide themselves when there's nothing to show (no Bluetooth, no backlight on a desktop).
+
+## Touchpad gestures
+
+Every gesture simply presses one of the shortcuts above, so gestures and keys always match
+(`config/gestures/libinput-gestures.conf`).
+
+| Gesture | Action | Same as |
+|---|---|---|
+| 3 fingers ← / → | next / previous workspace | `Super + ]` / `[` |
+| 3 fingers ↑ | window switcher | `Super + Tab` |
+| 3 fingers ↓ | drop-down terminal | `Super + -` |
+| 4 fingers ← / → | carry window to next / previous workspace | `Super + Shift + ]` / `[` |
+| 4 fingers ↑ | fullscreen on/off | `Super + Shift + f` |
+| 4 fingers ↓ | float / tile window | `Super + Shift + Space` |
+| 4-finger pinch in | app launcher | `Super + d` |
+| 4-finger pinch out | shortcut cheat sheet | `Super + /` |
+
+`dt-touchpad` also sets up the basics when i3 starts: tap to click, two-finger tap for a
+right click, three-finger tap for a middle click, two-finger scrolling, natural scrolling and
+ignoring the touchpad while you type. Set `NATURAL_SCROLL=0` at the top of the script for classic
+scrolling. These settings only apply to the i3 session.
 
 ## Scripts
 
@@ -200,6 +252,7 @@ the risky ones. The lock screen uses the current theme's background color.
   restarts are locked so two theme switches can't fight each other
 - **Live reload:** switching themes recolors terminals that are already open
 - **My own productivity features:** focus mode, the shortcut cheat sheet and the drop-down terminal
+- **Touchpad gestures** for workspaces, windows and launchers, mapped onto the same shortcuts
 - **CI:** every push runs `shellcheck` on all scripts and validates the i3 config
 
 ## Repo layout
@@ -213,10 +266,12 @@ the risky ones. The lock screen uses the current theme's background color.
 │   ├── rofi/config.rasi
 │   ├── kitty/kitty.conf
 │   ├── picom/picom.conf
-│   └── dunst/dunstrc.base
+│   ├── dunst/dunstrc.base
+│   └── gestures/libinput-gestures.conf
 ├── scripts/
-│   ├── dt-theme     dt-sysinfo   dt-shot
-│   └── dt-keys      dt-focus     dt-power
+│   ├── dt-theme     dt-sysinfo   dt-shot     dt-bar
+│   ├── dt-keys      dt-focus     dt-power    dt-ws
+│   └── dt-touchpad
 ├── themes/
 │   ├── gruvbox.theme  nord.theme  catppuccin.theme
 │   └── wallpapers/

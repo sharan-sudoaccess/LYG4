@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# dt-touchpad — touchpad settings for the i3 session (X11 + libinput).
+#   tap to click · 2-finger tap = right click · 3-finger tap = middle click
+#   2-finger scroll · natural scrolling · ignore the touchpad while typing
+# Runs when i3 starts. It only changes the current X11 session, so KDE,
+# GNOME and Hyprland keep their own touchpad settings.
+#
+# Prefer classic scrolling? Set NATURAL_SCROLL=0 below.
+NATURAL_SCROLL=1
+
+command -v xinput >/dev/null || exit 0
+
+for id in $(xinput list --id-only); do
+    # only devices that support tapping are touchpads
+    xinput list-props "$id" 2>/dev/null | grep -q "libinput Tapping Enabled (" || continue
+    xinput set-prop "$id" "libinput Tapping Enabled" 1
+    xinput set-prop "$id" "libinput Tapping Drag Enabled" 1
+    xinput set-prop "$id" "libinput Natural Scrolling Enabled" "$NATURAL_SCROLL"
+    xinput set-prop "$id" "libinput Disable While Typing Enabled" 1 2>/dev/null
+    xinput set-prop "$id" "libinput Scroll Method Enabled" 1 0 0 2>/dev/null      # two-finger
+    xinput set-prop "$id" "libinput Click Method Enabled" 0 1 2>/dev/null         # 2-finger click = right
+done
