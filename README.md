@@ -96,7 +96,7 @@ as JaKooLit's). You just pick the session on the login screen.
 | `Super + h j k l` (or arrows) | focus window |
 | `Super + Shift + h j k l` | move window |
 | `Super + b` / `v` | split horizontal / vertical |
-| `Super + w` / `s` / `e` | tabbed / stacked / split layout |
+| `Super + Shift + w` / `Super + s` / `Super + e` | tabbed / stacked / split layout |
 | `Super + Shift + f` | fullscreen |
 | `Super + Shift + Space` | toggle floating |
 | `Super + r` | resize mode (`hjkl`, `Esc` to leave) |
@@ -105,6 +105,7 @@ as JaKooLit's). You just pick the session on the login screen.
 | `Shift + Print` or `Super + Shift + s` | screenshot: select area |
 | `Super + Print` | screenshot: active window |
 | `Super + t` | theme picker |
+| `Super + w` | wallpaper picker |
 | `Super + i` | system info notification |
 | `Super + Shift + i` | live system monitor (floating) |
 | `Super + f` | focus mode on/off |
@@ -199,6 +200,21 @@ normal theme and applies it, so it also shows up in the `Super+t` picker. Try it
 **Adding your own theme:** copy `themes/nord.theme`, change the colors, and optionally drop a
 wallpaper with the same name into `themes/wallpapers/`.
 
+### `dt-wall`: wallpaper picker
+
+![wallpaper picker](screenshots/wallpaper-picker.png)
+
+`Super + w` shows every image in `~/Pictures/Wallpapers` as a grid of thumbnails, with the
+current wallpaper as a banner on top. Type to search.
+
+- **Enter**: set the wallpaper **and** recolor the whole desktop to match it (`dt-theme wall`)
+- **Alt + Enter**: set the wallpaper only and keep the current colors
+- **Random**: let it pick one
+
+Thumbnails are made once with ImageMagick and cached in `~/.cache/devdesk/thumbs`, so the menu
+opens fast even with many large images. The installer creates the folder and puts the bundled
+wallpapers in it. Just drop your own `.jpg`/`.png` files there.
+
 ### `dt-sysinfo`: CPU, RAM, battery
 
 ```bash
@@ -270,7 +286,7 @@ the risky ones. The lock screen uses the current theme's background color.
 │   └── gestures/libinput-gestures.conf
 ├── scripts/
 │   ├── dt-theme     dt-sysinfo   dt-shot     dt-bar
-│   ├── dt-keys      dt-focus     dt-power    dt-ws
+│   ├── dt-keys      dt-focus     dt-power    dt-ws       dt-wall
 │   └── dt-touchpad
 ├── themes/
 │   ├── gruvbox.theme  nord.theme  catppuccin.theme
