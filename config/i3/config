@@ -23,6 +23,8 @@ focus_follows_mouse no
 # --- autostart --------------------------------------------------------------
 exec --no-startup-id picom -b
 exec --no-startup-id dunst
+exec --no-startup-id nm-applet          # Wi-Fi icon in the bar
+exec --no-startup-id blueman-applet     # Bluetooth icon in the bar
 exec --no-startup-id $bin/dt-theme wallpaper
 exec_always --no-startup-id ~/.config/polybar/launch.sh
 exec --no-startup-id $term --name dropdown
@@ -46,7 +48,7 @@ for_window [class="(?i)spotify"] move to workspace $ws5
 # follow browsers and editors to their workspace when they open
 for_window [class="(?i)firefox|chromium|brave|google-chrome|^code$|code-oss|jetbrains|sublime"] focus
 
-for_window [class="(?i)pavucontrol|blueman|nm-connection-editor"] floating enable
+for_window [class="(?i)pavucontrol|blueman|nm-connection-editor|nm-applet"] floating enable
 for_window [window_role="pop-up|dialog"] floating enable
 
 # drop-down terminal that lives in the scratchpad (Super+-, re-opens if closed)
@@ -75,6 +77,14 @@ bindsym $mod+Shift+s      exec --no-startup-id $bin/dt-shot area
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5%
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5%
 bindsym XF86AudioMute        exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
+bindsym XF86MonBrightnessUp   exec --no-startup-id brightnessctl set +5%
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
+
+# --- settings ---------------------------------------------------------------
+bindsym $mod+n            exec $term --class floating-nmtui -e nmtui
+bindsym $mod+Shift+n      exec --no-startup-id blueman-manager
+bindsym $mod+Shift+v      exec --no-startup-id pavucontrol
+for_window [class="floating-nmtui"] floating enable, resize set 760 520, move position center
 
 # --- windows ----------------------------------------------------------------
 bindsym $mod+q kill

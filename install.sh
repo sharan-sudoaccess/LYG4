@@ -33,14 +33,16 @@ install_packages() {
             say "Arch detected — installing with pacman"
             sudo pacman -S --needed --noconfirm \
                 i3-wm i3lock polybar rofi kitty picom dunst feh maim xclip \
-                xdotool libnotify libpulse imagemagick xorg-xsetroot xdg-user-dirs ttf-jetbrains-mono
+                xdotool libnotify libpulse imagemagick xorg-xsetroot \
+                network-manager-applet blueman pavucontrol brightnessctl xdg-user-dirs ttf-jetbrains-mono
             ;;
         *" ubuntu "*|*" debian "*)
             say "Ubuntu/Debian detected — installing with apt"
             sudo apt-get update
             sudo apt-get install -y \
                 i3-wm i3lock polybar rofi kitty picom dunst feh maim xclip \
-                xdotool libnotify-bin pulseaudio-utils imagemagick x11-xserver-utils xdg-user-dirs fonts-jetbrains-mono
+                xdotool libnotify-bin pulseaudio-utils imagemagick \
+                network-manager-gnome blueman pavucontrol brightnessctl x11-xserver-utils xdg-user-dirs fonts-jetbrains-mono
             ;;
         *)
             echo "Unsupported distro ($ID). Install the packages from README manually, then run with --no-packages."
